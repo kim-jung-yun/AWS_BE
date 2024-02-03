@@ -33,6 +33,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		left JOIN item i  ON s.item_id = i.item_id
         left join product p on p.product_id = i.product_id
 		where  sl.branch_id= #{branch_id}
+			and p.product_id IS NOT NULL
+			and s.stock_quantity != 0
+			or sl.location_code IS NOT NULL
 		order by sl.location_id
 	</select>
 	
@@ -50,6 +53,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		    s.sale_status,
 		    sl.item_id,
 		    p.product_name,
+		    p.product_unit,
+			p.product_spec,
+			p.product_standard,
 		    sl.sale_list_quantity
 		from sale s
 		join sale_list sl on sl.sale_id = s.sale_id
@@ -118,8 +124,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	
 	<!-- 검수상품 보관장소 등록 - 검수내역 중 승인내역 목록 불러오기 -->
 	<select id="selectInspectionListByBranchId" parameterType="string" resultType="IncomeDTO" >
-		select 
+		select distinct
 			i.income_id,
+			i.income_code,
 		    i.income_date,
 		    i.income_amount,
 		    i.income_status,
@@ -128,16 +135,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		    il.income_list_quantity,
 		    il.income_list_result,
 		    il.item_id,
-		    
 		    item.item_exp,
-		    p.product_name
+		    p.product_name,
+		    p.product_standard,
+			p.product_unit
 		from income i
 		join income_list il on il.income_id = i.income_id
 		join item item on item.item_id = il.item_id
 		join product p on item.product_id = p.product_id
 		join stock s on s.item_id = item.item_id
         left join stock_location sl on sl.location_id = s.location_id
-		where i.income_status = "입고전" and il.income_list_result="승인" and i.branch_id = #{branch_id}  and sl.location_id is null
+		where i.income_status = "검수완료" and il.income_list_result="승인" and i.branch_id = #{branch_id}  and sl.location_id is null
 	</select>
 	
 	<!-- 검수상품 보관장소 등록 -스캔한 보관장소 정보 받아오기 -->
@@ -147,7 +155,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	
 	<!-- 검수상품 보관장소 등록 - 해당 상품의 재고정보 받아오기 -->
 	<select id="selectStockByItemId" parameterType="int" resultType="StockDTO">
-		select * from stock where item_id = #{item_id}
+		select * from stock s
+		join item i on i.item_id = s.item_id
+		join product p on p.product_id = i.product_id
+		where s.item_id = #{item_id}
 	</select>
 	
 	<!-- 검수상품 보관장소 등록  - 신규상품 보관장소 등록 -->
