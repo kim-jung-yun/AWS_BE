@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,8 +21,6 @@ import net.bytebuddy.agent.builder.AgentBuilder.InitializationStrategy.SelfInjec
 
 @RestController
 @RequestMapping("/api/v1/income")
-@CrossOrigin("*")
-
 public class IncomeController {
 	
 	@Autowired
@@ -89,7 +86,27 @@ public class IncomeController {
 	
 	@GetMapping("/inspection/complete")
 	public String inspectionComplete(@RequestParam String incomeId, @RequestParam String branch_id) {
+		System.out.println(incomeId+"/"+branch_id);
 		List<IncomeDTO> incomeList = incomeService.selectIncomeListByIncomeId(incomeId);
+		int count = 0;
+		String returnValue = "실패";
+		
+		for(int i=0; i<incomeList.size(); i++) {
+			IncomeDTO incomeDTO = incomeList.get(i);
+			if(incomeDTO.getIncome_list_result().equals("승인")) {
+				count +=1;
+			}
+		}
+		
+		if (incomeList.size() == count ) {
+			//모두 승인상태
+			returnValue="모두 승인되었습니다.";
+
+		} else if (incomeList.size() > count) {
+			returnValue= count+"건 부분 승인 되었습니다.";
+
+		} 
+		
 		
 		for(int i=0; i<incomeList.size(); i++) {
 			IncomeDTO incomeDTO = incomeList.get(i);
@@ -100,7 +117,7 @@ public class IncomeController {
 				//int result2 = incomeService.selectSameProductCount(item_code[0]);
 				System.out.println("같은 품목 개수::::::::::::::::::::::::::::"+item_code[0]+"/"+result1);
 				
-				//같은 상품번호를 가진 재고가 있음 (입고완료인데 검수전상품)->같은아이템아이디를 가진 재고는 없다고 가정
+				//같은 상품코드를 가진 재고가 있음 (입고완료인데 검수전상품)->같은아이템아이디를 가진 재고는 없다고 가정
 				if(result1>0) {
 					//int updateStockResult = incomeService.updateIncomeListResult(incomeDTO.getItem_id());
 					System.out.println("같은 품목 개수가 있음::::::::::::::::::::"+result1);
@@ -108,16 +125,26 @@ public class IncomeController {
 					
 				//같은 상품번호를 가진 재고가 없음 (입고전+검수전)
 				}else {
-					int insertStockResult = incomeService.insertStockItem(branch_id, incomeDTO.getItem_id());
-					System.out.println("같은 품목 개수가 없음::::::::::::::::::::"+result1);
-					int updateItemStatus = incomeService.updateItemStatus(incomeDTO.getItem_id(), "입고전");
+					int itemCount = incomeService.selectSameProductCount(incomeDTO.getItem_id());
+					System.out.println("같은 품목 개수가 없음::::::::::::::::::::"+incomeDTO.getItem_id()+"/"+result1);
+
+					if(itemCount>=1) {
+						System.out.println("~~~"+itemCount);
+
+					} else {
+						System.out.println("~~~");
+						int insertStockResult = incomeService.insertStockItem(branch_id, incomeDTO.getItem_id());
+						int updateItemStatus = incomeService.updateItemStatus(incomeDTO.getItem_id(), "입고전");
+					}
+
 				}
 			}
 		}
 		
-		int result =  incomeService.updateIncomeStatus(incomeId);
+		int result =  incomeService.updateIncomeStatus("검수완료",incomeId);
+
 				
-		return null;
+		return returnValue;
 		
 	}
 	
