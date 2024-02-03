@@ -27,7 +27,6 @@ import net.nurigo.sdk.message.response.SingleMessageSentResponse;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 
 import com.ssgtarbucks.util.SendMail;
-import com.ssgtarbucks.util.SendMessage;
 import com.ssgtarbucks.domain.UserDTO;
 import com.ssgtarbucks.persistence.UserRepository;
 
@@ -55,8 +54,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	SendMail sendMail;
 	
-	@Autowired
-	SendMessage sendMessage;
 	
 	@Override
 	public UserDTO selectUserByUserId(String user_id) {

@@ -19,7 +19,6 @@ import com.ssgtarbucks.domain.TokenDTO;
 import com.ssgtarbucks.domain.UserDTO;
 import com.ssgtarbucks.jwt.JwtUtil;
 import com.ssgtarbucks.service.UserService;
-import com.ssgtarbucks.util.SendMessage;
 
 
 @RestController
@@ -39,8 +38,6 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	@Autowired
-	private SendMessage sendMessage;
      
 	@PostMapping("/user/login")
 	public ResponseEntity<TokenDTO> login(@RequestBody UserDTO userDTO) {
