@@ -20,11 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import net.nurigo.sdk.NurigoApp;
-import net.nurigo.sdk.message.model.*;
-import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
-import net.nurigo.sdk.message.response.SingleMessageSentResponse;
-import net.nurigo.sdk.message.service.DefaultMessageService;
 
 import com.ssgtarbucks.util.SendMail;
 import com.ssgtarbucks.domain.UserDTO;
@@ -33,15 +28,10 @@ import com.ssgtarbucks.persistence.UserRepository;
 @Service
 public class UserServiceImpl implements UserService {
 	
-    final DefaultMessageService messageService;
     
     @Value("${message.api.imgpath}")
     private String imgPath;
-    
-    public UserServiceImpl() {
-        this.messageService = NurigoApp.INSTANCE.initialize("", "", "https://api.coolsms.co.kr");
 
-    }
     
     private static final String SPECIAL_CHARACTERS = "!@#$%^&*()_-+=<>?";
     private static final String UPPERCASE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -132,24 +122,6 @@ public class UserServiceImpl implements UserService {
         return new String(characters);
     }
 
-
-    //문자전송
-    public void Message(String to, String tempCode) {
-        net.nurigo.sdk.message.model.Message message = new net.nurigo.sdk.message.model.Message();
-        message.setFrom("01084037635");
-        message.setTo(to);
-        message.setText("[SSGtarbucks]비밀번호 찾기 인증번호 => ["+tempCode+"]");
-
-        SingleMessageSentResponse response = this.messageService.sendOne(new SingleMessageSendingRequest(message));
-    
-    }
-    
-    //문자전송 component
-    public void MessageCompnt(String to, String tempCode) {
-    	
-    }
-    
-    
    //메일전송
     public void Mail(String to, String tempCode) {
     	

@@ -21,8 +21,5 @@ public interface UserService {
 	int deleteTempCodeByUserId(String user_id);
 
 	public void Mail(String to, String tempCode);
-	
-	public void Message(String to, String tempCode);
-	
-	public void MessageCompnt(String to, String tempCode);
+
 }
