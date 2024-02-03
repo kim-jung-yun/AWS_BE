@@ -17,19 +17,20 @@
 			join stock s on s.item_id =	i.item_id
 			join stock_location sl on sl.location_id = s.location_id
 			join qrcode q on q.qrcode_id = i.qrcode_id
-		WHERE q.qrcode_id = #{qrcode_id}
+		WHERE q.qrcode_id = #{qrcode_id} and s.stock_quantity != 0
 	</select>
 	
 	
 	<!-- QR코드 통합검색  --> 
 	<select id="selectItemAndLocationToSearchbyQRcode" parameterType="QrCodeDTO" resultType="SearchDTO">
 		SELECT 
-		    p.product_id,   p.product_name,  p.product_standard, 
+		    p.product_id,  p.product_code,
+		   p.product_name,  p.product_standard, 
 		    p.product_unit,  c.category_name,  p.product_spec,
-			i.item_id,i.item_code,i.item_exp, img.image_path, 
+			i.item_id,i.item_code,i.item_exp, i.item_status, img.image_path, 
 		    qr.qrcode_value as item_qrcode_value ,qr.qrcode_path as item_qrcode_path,
-			s.stock_quantity,  s.stock_date, sl.location_code,
-		    sl.location_section_name, sl.location_alias,
+			s.stock_quantity,  s.stock_date, sl.location_code, 
+		    sl.location_area, sl.location_section,sl.location_section_name, sl.location_alias,
 			qrp.qrcode_value as location_qrcode_value,qrp.qrcode_path as location_qrcode_path
 		FROM product p 
 		JOIN item i ON p.product_id = i.product_id
@@ -40,6 +41,8 @@
 		JOIN stock_location sl on s.location_id=sl.location_id
 		JOIN qrcode qrp ON qrp.qrcode_id=sl.qrcode_id
 		WHERE 
+			s.stock_quantity != 0
+			and
 		    (s.branch_id = #{branch_id} and qr.qrcode_value=#{qrcode_value})
 		    or
 		    (s.branch_id = #{branch_id} and qrp.qrcode_value=#{qrcode_value})
@@ -130,6 +133,17 @@
 		    AND qr.qrcode_value = #{qrcode_value}	
 	</select>
 	
+	<!-- 상품상태 출고 변경 -->
+	<update id="updateItemStatusToOutcome" parameterType="OutcomeQRItemDTO" >	
+		update item set item_status = "출고" where item_id = #{item_id}
+	</update>
+	
+	<!-- 상품상태 폐기 변경 -->
+	<update id="updateItemStatusToDiscard" parameterType="OutcomeQRItemDTO">	
+		update item set item_status = "폐기" where item_id = #{item_id}
+	</update>
+	
+	
 	<!-- 상품사용/폐기 QR - 재고갯수변경-->
 	<update id="updateStockCountForOutcomeItemByitemId" parameterType="OutcomeQRItemDTO">
 		UPDATE stock
@@ -147,7 +161,7 @@
 		insert outcome(outcome_code,outcome_date,outcome_amount,branch_id)
 		value (#{outcome_code},(select curdate()),1,#{branch_id});
 	</insert>
-	
+
 	
 	<!-- 상품사용QR - 출고리스트등록을 위한 outcome_id찾기 -->
 	<select id="selectOutcomeListForFindOutcomeId" resultType="_int" >
@@ -156,13 +170,14 @@
 		join outcome o on o.outcome_id=ol.outcome_id
 		order by ol.outcome_list_id desc limit 1
 	</select>
+	
 	<!-- 상품사용QR -  출고리스트 등록 -->
 	<insert id="insertOutcomeListToUseItem">
 		insert outcome_list(outcome_list_quantity,outcome_id,item_id) 
 			values(1,#{outcome_id},#{item_id})
 	</insert>
 	
-	
+
 	
 	<!-- 상품폐기 QR - discard에 추가하기위해 마지막 코드 +1-->
 	<select id="selectDiscardIdForFindDiscardCode" resultType="_long">

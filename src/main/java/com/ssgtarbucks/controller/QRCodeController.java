@@ -18,8 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import io.swagger.models.Model;
-
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+//import com.google.common.util.concurrent.Service;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.WriterException;
 import com.ssgtarbucks.domain.MoveQRItemDTO;
@@ -50,8 +49,6 @@ import com.ssgtarbucks.service.UserService;
 
 @RestController
 @RequestMapping("/api/v1/qrcode")
-@CrossOrigin("*")
-
 public class QRCodeController {
 
 	@Autowired
